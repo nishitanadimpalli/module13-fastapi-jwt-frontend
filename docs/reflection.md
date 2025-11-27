@@ -1,0 +1,9 @@
+# Reflection – Module 10 FastAPI Secure User Project
+
+In this assignment, I implemented a secure user model in a FastAPI application using SQLAlchemy and Pydantic. I started by defining the `User` ORM model with fields for `username`, `email`, `password_hash`, and `created_at`, and added uniqueness constraints for both `username` and `email`. On top of this model, I created Pydantic schemas (`UserCreate` and `UserRead`) to separate incoming user data from the response format and to avoid exposing the password hash in API responses.
+
+A key part of the project was handling password security. I used `passlib[bcrypt]` to hash plain-text passwords before storing them and implemented a verification function to compare plain-text passwords with stored hashes. I also wrote unit tests to validate the hashing and verification logic, as well as schema validation tests to confirm that invalid email formats and missing fields are correctly rejected.
+
+For integration testing, I configured the tests to run against a real PostgreSQL database (running in Docker). I learned how to manage a dedicated test database, ensure tables are created before tests, and clean up test data between test runs. This helped reinforce the difference between unit tests and integration tests, and showed how important it is to isolate test data from other projects.
+
+Finally, I set up a CI/CD pipeline using GitHub Actions. The workflow spins up a PostgreSQL service, creates the test database, installs dependencies, runs the test suite, and, on successful tests in the `main` branch, builds and pushes a Docker image to Docker Hub. This end-to-end process taught me how to automate testing and deployment, and how environment variables like `DATABASE_URL` can be used to keep configuration flexible between local development, CI, and Docker containers.
