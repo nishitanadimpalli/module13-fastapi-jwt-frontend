@@ -1,41 +1,19 @@
-name: CI - Tests and Docker Build
+name: CI
 
 on:
   push:
-    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
 
 jobs:
-  test-and-build:
+  test:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: calcuser
-          POSTGRES_PASSWORD: calcpass
-          POSTGRES_DB: module10db
-        ports:
-          - 5432:5432
-        # Wait for Postgres to be healthy
-        options: >-
-          --health-cmd="pg_isready -U calcuser -d module10db"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
-
-    env:
-      # This is what your app/tests expect (same as you used locally)
-      DATABASE_URL: postgresql+psycopg2://calcuser:calcpass@localhost:5432/module10db
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: "3.12"
 
@@ -44,19 +22,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run tests
-        run: pytest
+      # ⭐ REQUIRED FOR PLAYWRIGHT E2E TESTS ⭐
+      - name: Install Playwright browsers
+        run: |
+          python -m playwright install --with-deps
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: nishitanadimpalli/module12-fastapi-backend:latest
-
+      - name: Run pytest
+        run: pytest -v
